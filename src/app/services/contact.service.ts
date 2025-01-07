@@ -13,7 +13,7 @@ export interface Contact {
   providedIn: 'root',
 })
 export class ContactService {
-  private baseUrl = 'https://localhost:7280/api/contacts'; // Update with your backend URL
+  private readonly baseUrl = 'https://localhost:7280/api/contacts';
 
   constructor(private http: HttpClient) {}
 
