@@ -1,33 +1,32 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Contact, ContactService } from '../../services/contact.service';
 import { CommonModule } from '@angular/common';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { Contact, ContactService } from '../../services/contact.service';
 
 @Component({
   selector: 'app-contact-form',
   standalone: true,
   templateUrl: './contact-form.component.html',
   styleUrls: ['./contact-form.component.scss'],
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule],
 })
 export class ContactFormComponent implements OnInit {
+  @Input() contactId?: number;
+  @Output() onSave = new EventEmitter<void>();
   contactForm!: FormGroup;
-  contactId?: number;
 
   constructor(
     private fb: FormBuilder,
     private contactService: ContactService,
-    private router: Router,
-    private route: ActivatedRoute
+    public activeModal: NgbActiveModal
   ) { }
 
   ngOnInit(): void {
     this.formValidation();
-    this.contactId = +this.route.snapshot.paramMap.get('id')!;
     if (this.contactId) {
       this.contactService.getContact(this.contactId).subscribe((contact) => {
-        this.contactForm?.patchValue(contact);
+        this.contactForm.patchValue(contact);
       });
     }
   }
@@ -46,13 +45,19 @@ export class ContactFormComponent implements OnInit {
       if (this.contactId) {
         contact.id = this.contactId;
         this.contactService.updateContact(contact).subscribe(() => {
-          this.router.navigate(['/']);
+          this.onSave.emit();
+          this.activeModal.close();
         });
       } else {
         this.contactService.createContact(contact).subscribe(() => {
-          this.router.navigate(['/']);
+          this.onSave.emit();
+          this.activeModal.close();
         });
       }
     }
+  }
+
+  cancel(): void {
+    this.activeModal.dismiss('cancel');
   }
 }

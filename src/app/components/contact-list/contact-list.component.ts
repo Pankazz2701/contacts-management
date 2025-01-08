@@ -1,19 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { Contact, ContactService } from '../../services/contact.service';
+import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { ContactFormComponent } from '../contact-form/contact-form.component';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-contact-list',
   standalone: true,
   templateUrl: './contact-list.component.html',
   styleUrls: ['./contact-list.component.scss'],
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, NgbModule],
 })
 export class ContactListComponent implements OnInit {
   contacts: Contact[] = [];
 
-  constructor(private contactService: ContactService) { }
+  constructor(private contactService: ContactService, private modalService: NgbModal) { }
 
   ngOnInit(): void {
     this.loadContacts();
@@ -22,6 +23,14 @@ export class ContactListComponent implements OnInit {
   loadContacts(): void {
     this.contactService.getContacts().subscribe((data) => {
       this.contacts = data;
+    });
+  }
+
+  openContactForm(contactId?: number): void {
+    const modalRef = this.modalService.open(ContactFormComponent, { size: 'lg' });
+    modalRef.componentInstance.contactId = contactId;
+    modalRef.componentInstance.onSave.subscribe(() => {
+      this.loadContacts();
     });
   }
 
